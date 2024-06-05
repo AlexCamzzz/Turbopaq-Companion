@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 class BusinessData {
   List<Venta> ventas;
   List<dynamic> empleados;
@@ -10,6 +12,7 @@ class BusinessData {
   double dineroEnCaja;
   dynamic emailApp;
   dynamic corteDeCajaSeleccionado;
+  late int computedYear;
 
   BusinessData({
     required this.ventas,
@@ -23,6 +26,7 @@ class BusinessData {
     required this.dineroEnCaja,
     required this.emailApp,
     required this.corteDeCajaSeleccionado,
+    
   });
 
   factory BusinessData.fromMap(Map<String, dynamic> map) {
@@ -43,8 +47,87 @@ class BusinessData {
     );
   }
 
-  void actualizarDineroEnCaja(){
+  void actualizarDineroEnCaja() {
     dineroEnCaja = cortes.last.saldoFinal;
+  }
+
+  List<String> generarJsonsPrediccion() {
+    List<String> encabezadosydatos;
+    Map<int, int> ventasPorMes = {
+      for (var item in List.generate(12, (index) => index + 1)) item: 0
+    };
+    double promedioVenta = 0;
+    double sum = 0;
+    int cantidadTotal = 0;
+
+    // Calcular la cantidad de ventas por mes
+    for (var venta in ventas) {
+      int mes = venta.fechaCreacion.month;
+
+      cantidadTotal++;
+      sum += venta.total;
+
+      ventasPorMes[mes] = ventasPorMes[mes]! + 1;
+    }
+
+    promedioVenta = sum / cantidadTotal;
+
+    ventasPorMes.removeWhere((_, cantidadVentas) => cantidadVentas == 0);
+
+    var e = List.from(ventasPorMes.keys);
+    var v = List.from(ventasPorMes.values);
+    if (DateTime.now().day < 15) {
+      e.removeLast();
+      v.removeLast();
+    }
+
+    String encabezado = jsonEncode(e);
+    String valores = jsonEncode(v);
+    encabezadosydatos = [encabezado, valores, promedioVenta.toString()];
+    return encabezadosydatos;
+  }
+
+  String mesActual(){
+    String str = "";
+    switch (cortes.last.fecha.month) {
+      case 1:
+        str += "ENERO";
+        break;
+      case 2:
+        str += "FEBRERO";
+        break;
+      case 3:
+        str += "MARZO";
+        break;
+      case 4:
+        str += "ABRIL";
+        break;
+      case 5:
+        str += "MAYO";
+        break;
+      case 6:
+        str += "JUNIO";
+        break;
+      case 7:
+        str += "JULIO";
+        break;
+      case 8:
+        str += "AGOSTO";
+        break;
+      case 9:
+        str += "SEPTIEMBRE";
+        break;
+      case 10:
+        str += "OCTUBRE";
+        break;
+      case 11:
+        str += "NOVIEMBRE";
+        break;
+      case 12:
+        str += "DICIEMBRE";
+        break;
+    }
+    return str;
   }
 }
 
@@ -101,7 +184,7 @@ class Venta {
     );
   }
 
-  String fechaString() {
+  String fechaMes() {
     String str = "";
 
     str += fechaCreacion.day.toString();

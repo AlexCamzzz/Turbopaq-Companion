@@ -1,7 +1,7 @@
 name: turbopaq_companion
-description: "A new Flutter project."
+description: "Toda la información de tu sucursal a unos simples toques"
 publish_to: 'none'
-version: 0.1.0
+version: 1.0.0
 
 environment:
   sdk: '>=3.4.1 <4.0.0'
@@ -19,6 +19,14 @@ dependencies:
   calendar_date_picker2: ^1.0.2
   hexcolor: ^3.0.1
   ml_linalg: ^13.12.2
+  ml_preprocessing: ^7.0.2
+  ml_dataframe: ^1.6.0
+  csv: ^5.1.1
+  ml_algo: ^16.17.10
+  path_provider: ^2.1.3
+  http: ^1.2.1
+  flutter_native_splash: ^2.4.0
+  flutter_launcher_icons: "^0.13.1"
 
 dev_dependencies:
   flutter_test:
@@ -34,5 +42,25 @@ flutter:
           weight: 400
   assets:
    - assets/images/logo.png
+
+flutter_native_splash:
+  android: true
+  ios: true
+  web: false
+
+  background_image: "assets/images/background.png"
+  image: "assets/images/logosp.png"
+  branding: "assets/images/branding.png"
+
+  android_12:
+    color: "#4079a1"
+    image: "assets/images/logoAndroid.png"
+    branding: "assets/images/brandingAndroid.png"
+
+flutter_launcher_icons:
+  android: "launcher_icon"
+  ios: true
+  image_path: "assets/images/logo.png"
+  min_sdk_android: 21
 
 

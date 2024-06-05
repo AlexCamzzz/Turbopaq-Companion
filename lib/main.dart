@@ -12,6 +12,7 @@ class MainApp extends StatelessWidget {
   const MainApp({super.key});
   static BusinessData? data;
   static ThemeData tema = light;
+  
 
   @override
   Widget build(BuildContext context) {

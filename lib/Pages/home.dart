@@ -21,8 +21,7 @@ Color? color = light.iconTheme.color;
 
 class _HomePageState extends State<HomePage> {
   int _selectedIndex = 0;
-
-  static late Future<BusinessData?>? sucursalFuture;
+  late Future<BusinessData?> sucursalFuture;
 
   @override
   void initState() {
@@ -46,25 +45,38 @@ class _HomePageState extends State<HomePage> {
       text: 'Ventas',
       iconColor: color,
     ),
-    GButton(
-      icon: Icons.settings,
-      text: 'Configuración',
-      iconColor: color,
-    ),
   ];
 
-  static List<Widget> _pages(List<Corte> cortes, List<Venta> v) {
+  List<Widget> _pages(List<Corte> cortes, List<Venta> v) {
     return [
       const InicioPage(),
       CajaPage(cortes: cortes),
       VentasPage(ventas: v),
-      const Center(child: Text('Página de Configuración')),
     ];
   }
 
-  void _onItemTapped(int index) {
+  Future<void> _refreshData() async {
+    setState(() {
+      sucursalFuture = fetchSucursal('65ce5862f25ddef040197194');
+    });
+  }
+
+  PageController pageController = PageController(
+    initialPage: 0,
+    keepPage: true,
+  );
+
+  void pageChanged(int index) {
     setState(() {
       _selectedIndex = index;
+    });
+  }
+
+  void bottomTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
+      pageController.animateToPage(index,
+          duration: const Duration(milliseconds: 500), curve: Curves.ease);
     });
   }
 
@@ -73,35 +85,46 @@ class _HomePageState extends State<HomePage> {
     return Scaffold(
       body: SafeArea(
         child: Scaffold(
-          body: FutureBuilder<BusinessData?>(
-            future: sucursalFuture,
-            builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                return const Center(child: CircularProgressIndicator());
-              } else if (snapshot.hasError) {
-                print(snapshot.stackTrace);
-                return Center(child: Text('Error: ${snapshot.error}'));
-              } else if (!snapshot.hasData || snapshot.data == null) {
-                return const Center(child: Text('Sucursal not found'));
-              } else {
-                BusinessData sucursal = snapshot.data!;
-                MainApp.data = snapshot.data!;
-                // Use sucursal data as needed
-                return _pages(sucursal.cortes, sucursal.ventas)[_selectedIndex];
-              }
-            },
+          body: RefreshIndicator(
+            onRefresh: _refreshData,
+            child: FutureBuilder<BusinessData?>(
+              future: sucursalFuture,
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
+                } else if (snapshot.hasError) {
+                  
+                  return Center(child: Text('Error: ${snapshot.error}'));
+                } else if (!snapshot.hasData || snapshot.data == null) {
+                  return const Center(child: Text('Sucursal not found'));
+                } else {
+                  BusinessData sucursal = snapshot.data!;
+                  MainApp.data = snapshot.data!;
+                  return PageView(
+                    controller: pageController,
+                    children: _pages(sucursal.cortes, sucursal.ventas),
+                    onPageChanged: (index) {
+                      pageChanged(index);
+                    },
+                  );
+                }
+              },
+            ),
           ),
           bottomNavigationBar: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 10),
             child: Padding(
               padding: const EdgeInsets.all(4.0),
               child: GNav(
-                activeColor: Colors.indigo.shade50, // Choose an appropriate color
+                activeColor:
+                    Colors.indigo.shade50, // Choose an appropriate color
                 tabBackgroundColor: HexColor('007BB2'),
                 gap: 10,
                 padding: const EdgeInsets.all(10),
                 selectedIndex: _selectedIndex,
-                onTabChange: _onItemTapped,
+                onTabChange: (index) {
+                  bottomTapped(index);
+                },
                 tabs: tabs,
               ),
             ),
